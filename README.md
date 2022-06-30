@@ -1,16 +1,8 @@
 # node-mbus
 
-[![NPM version](http://img.shields.io/npm/v/node-mbus.svg)](https://www.npmjs.com/package/node-mbus)
+[![NPM version](https://img.shields.io/npm/v/node-mbus.svg)](https://www.npmjs.com/package/node-mbus)
+![Test and Release](https://github.com/Apollon77/node-mbus/workflows/Test%20and%20Release/badge.svg)
 [![Downloads](https://img.shields.io/npm/dm/node-mbus.svg)](https://www.npmjs.com/package/node-mbus)
-[![Code Climate](https://codeclimate.com/github/Apollon77/node-mbus/badges/gpa.svg)](https://codeclimate.com/github/Apollon77/node-mbus)
-
-**Tests:**
-[![Test Coverage](https://codeclimate.com/github/Apollon77/node-mbus/badges/coverage.svg)](https://codeclimate.com/github/Apollon77/node-mbus/coverage)
-Linux/Mac:
-[![Travis-CI](http://img.shields.io/travis/Apollon77/node-mbus/master.svg)](https://travis-ci.org/Apollon77/node-mbus)
-Windows: [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/Apollon77/node-mbus?branch=master&svg=true)](https://ci.appveyor.com/project/Apollon77/node-mbus/)
-
-[![NPM](https://nodei.co/npm/node-mbus.png?downloads=true)](https://nodei.co/npm/node-mbus/)
 
 This library provides access to selected functions of the libmbus (https://github.com/rscada/libmbus) to communicate with mbus devices via serial or TCP connections.
 
