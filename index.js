@@ -7,6 +7,8 @@
 const mbusBinding = require('bindings')('mbus');
 const xmlParser = require('xml2js');
 
+const MAXFRAMES = 16;
+
 class MbusMaster {
     constructor(options) {
         this.options = options || {};
@@ -126,7 +128,7 @@ class MbusMaster {
         });
     }
 
-    getData(address, callback) {
+    getData(address, callback, max_frames = MAXFRAMES) {
         if (!this.mbusMaster.connected && !this.options.autoConnect) {
             if (callback) callback(new Error('Not connected and autoConnect is false'));
             return;
@@ -137,7 +139,7 @@ class MbusMaster {
                 if (callback) callback(err);
                 return;
             }
-            this.mbusMaster.get(address, (err, data) => {
+            this.mbusMaster.get(address, max_frames, (err, data) => {
                 if (!err && data) {
                     //data = JSON.parse(data).MBusData;
                     const parserOpt = {
