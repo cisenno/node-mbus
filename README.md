@@ -185,9 +185,10 @@ When you try to read data while communication is in progress your callback is ca
 ## Changelog
 
 ### __WORK IN PROGRESS__
-* (JKRhb) add support for Node.js 20.x
-* (hasanheroglu) add context aware support
-* (sjlongland) make device ping configurable and add TCP timeout documentation
+* (JKRhb) added support for Node.js 20.x
+* (hasanheroglu) added context aware support
+* (sjlongland) makes device ping configurable and add TCP timeout documentation
+* Updated deps
 
 ### 2.0.0 (2022-06-29)
 * IMPORTANT: Minimum node.js version is not 12.x and all LTS supported up to 18.x
