@@ -131,17 +131,13 @@ class MbusMaster {
         // pingFirst: Work-around buggy behaviour with some M-Bus devices,
         //            notably Sontex Supercal531
         //            https://github.com/rscada/libmbus/pull/95
-        let pingFirst = true;
 
         if (typeof(options) === "function") {
             callback = options;
             options = null;
         }
 
-        if (options) {
-            // de-structure
-            ({pingFirst} = options);
-        }
+        const pingFirst = (options && options.pingFirst !== undefined) ? options.pingFirst : true;
 
         if (!this.mbusMaster.connected && !this.options.autoConnect) {
             if (callback) callback(new Error('Not connected and autoConnect is false'));
@@ -181,7 +177,7 @@ class MbusMaster {
         });
     }
 
-    getDataAsync(address, options=null) {
+    getDataAsync(address, options = null) {
         return new Promise((resolve, reject) => {
             this.getData(address, options, (err, data) => {
                 if (err) {

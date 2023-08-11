@@ -183,6 +183,12 @@ When you try to read data while communication is in progress your callback is ca
 * Also build the libmbus binaries and tools? (if needed)
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* (JKRhb) add support for Node.js 20.x
+* (hasanheroglu) add context aware support
+* (sjlongland) make device ping configurable and add TCP timeout documentation
+
 ### 2.0.0 (2022-06-29)
 * IMPORTANT: Minimum node.js version is not 12.x and all LTS supported up to 18.x
 * Add promisified methods with Async at the end of the name (e.g. `connectAsync`)

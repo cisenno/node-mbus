@@ -259,15 +259,12 @@ public:
 
         memset((void *)&reply, 0, sizeof(mbus_frame));
 
-        if (ping_first)
+        if (ping_first && init_slaves(handle) == 0)
         {
-            if (init_slaves(handle) == 0)
-            {
-                sprintf(error, "Failed to init slaves.");
-                SetErrorMessage(error);
-                uv_rwlock_wrunlock(lock);
-                return;
-            }
+            sprintf(error, "Failed to init slaves.");
+            SetErrorMessage(error);
+            uv_rwlock_wrunlock(lock);
+            return;
         }
 
         if (mbus_is_secondary_address(addr_str))
