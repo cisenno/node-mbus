@@ -5,4 +5,4 @@ NAN_MODULE_INIT(InitModule) {
     MbusMaster::Init(target);
 }
 
-NODE_MODULE(mbus, InitModule)
+NAN_MODULE_WORKER_ENABLED(mbus, InitModule);
