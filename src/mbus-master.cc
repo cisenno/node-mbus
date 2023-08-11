@@ -1,6 +1,5 @@
 #include "mbus-master.h"
 #include "util.h"
-#include "node.h"
 
 #ifdef _WIN32
 #define __PRETTY_FUNCTION__ __FUNCSIG__
@@ -56,11 +55,7 @@ NAN_MODULE_INIT(MbusMaster::Init) {
 
     v8::Local<v8::Function> function = Nan::GetFunction(tpl).ToLocalChecked();
     constructor.Reset(function);
-#if NODE_MAJOR_VERSION >= 19
-    v8::Local<v8::Context> context = target->GetCreationContext().ToLocalChecked();
-#else
     v8::Local<v8::Context> context = target->CreationContext();
-#endif
     target->Set(context, Nan::New("MbusMaster").ToLocalChecked(), function);
 }
 
