@@ -49,6 +49,19 @@ In the options object you set the communication and other parameter for the libr
 * *serialPort*/*serialBaudRate*: For Serial communication you set the *serialPort* (e.g. /dev/ttyUSB0) and optionally the *serialBaudRate* to connect. Default Baudrate is 2400baud if option is missing
 * *autoConnect*: set to "true" if connection should be established automatically when needed - else you need to call "connect()" before you can communicate with the devices.
 
+#### A note about TCP communcation `timeout`
+
+On TCP networks, this sets the response time-out in milliseconds.  The default is a quite conservative 4 seconds (4000ms).  For serial networks, it is a function of the baud rate: between 11 and 330 "bit times" to which one should factor in some round-trip-time delay for network traversal.
+
+`libmbus` uses [the following equation](https://github.com/rscada/libmbus/blob/master/mbus/mbus-serial.c#L67-L79) to estimate this on serial networks (factoring in about 100ms round-trip-time between the host and the M-Bus driver):
+
+```
+(330 + 11) / BAUD + 0.15
+```
+
+ * 2400 baud network should respond within 300ms (~292ms), assuming 100ms host-driver round-trip time.
+ * 300 baud network should respond within 1300ms (~1287ms), assuming 100ms host-driver round-trip time.
+
 ### connect(callback)
 Call this method to connect to TCP/Serial. Needs to be done before you can communicate with the devices.
 The optional callback will be called with an *error* parameter that is *null* on success.
@@ -60,8 +73,13 @@ The optional callback will be called with an *error* parameter that is *null* on
 The method will return true/false when no callback is provided.
 When you have provided a callback and you try to close the connection while communication is in progress the method will wait till communication has finished (checked every 500ms), then close the connection and then call the callback. When not using a callback then you get false as result in this case. When you set *waitTillClosed* while using a callback the callback will be called with an error if communication is still ongoing.
 
-### getData(address, callback)
+### getData(address, [options,] callback)
 This method is requesting "Class 2 Data" from the device with the given *address*.
+
+The *options* parameter is optional, and if given, is in the form of an object with one or more of the following properties set:
+
+ * `pingFirst`: (Boolean; default `true`) Ping the target devices first before attempting communication.  This is primarily a work-around to some devices (such as the Sontex Supercal531) that must be "reset" first.  The default is to always perform these initial pings, however the feature can be disabled if the M-Bus slave devices are known to behave without it.
+
 The callback is called with an *error* and *data* parameter. When data are received successfully the *data* parameter contains the data object.
 When you try to read data while communication is in progress your callback is called with an error.
 
