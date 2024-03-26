@@ -183,6 +183,10 @@ When you try to read data while communication is in progress your callback is ca
 * Also build the libmbus binaries and tools? (if needed)
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* (petrkr) Add IPv6 support to TCP connection
+
 ### 2.1.0 (2023-08-11)
 * (JKRhb) added support for Node.js 20.x
 * (hasanheroglu) added context aware support
