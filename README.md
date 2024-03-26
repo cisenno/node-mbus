@@ -186,6 +186,7 @@ When you try to read data while communication is in progress your callback is ca
 
 ### __WORK IN PROGRESS__
 * (petrkr) Add IPv6 support to TCP connection
+* Updated dependencies
 
 ### 2.1.0 (2023-08-11)
 * (JKRhb) added support for Node.js 20.x
