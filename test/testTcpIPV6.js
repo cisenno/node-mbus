@@ -17,14 +17,14 @@ function sendMessage(socket, message, callback) {
     });
 }
 
-describe('Native libmbus node-module TCP test ...', function() {
+describe('Native libmbus node-module TCP-IPv6 test ...', function() {
 
-    it('Test Reading TCP', function (done) {
+    it('Test Reading TCP-IPv6', function (done) {
         this.timeout(300000); // because of first install from npm
 
         let testSocket;
         const server = net.createServer(function (socket) {
-            console.log(new Date().toString() + ': mbus-TCP-Device: Connected ' + port + '!');
+            console.log(new Date().toString() + ': mbus-TCPv6-Device: Connected ' + port + '!');
 
             socket.setNoDelay();
             testSocket = socket;
@@ -34,15 +34,15 @@ describe('Native libmbus node-module TCP test ...', function() {
                 let counterFD = 0;
 
                 if (!data) {
-                    console.log(new Date().toString() + ': mbus-TCP-Device: Received empty string!');
+                    console.log(new Date().toString() + ': mbus-TCPv6-Device: Received empty string!');
                     return;
                 }
                 const hexData = data.toString('hex');
-                console.log(new Date().toString() + ': mbus-TCP-Device: Received from Master: ' + hexData);
+                console.log(new Date().toString() + ': mbus-TCPv6-Device: Received from Master: ' + hexData);
 
                 if (hexData.substring(0, 4) === '1040') {
                     const device = hexData.substring(4, 6);
-                    console.log(new Date().toString() + ':     mbus-TCP-Device: Initialization Request ' + device);
+                    console.log(new Date().toString() + ':     mbus-TCPv6-Device: Initialization Request ' + device);
                     if (device === "fe" || device === "01" || device === "05") {
                         sendBuf = Buffer.from('E5', 'hex');
                         sendMessage(socket, sendBuf);
@@ -54,41 +54,41 @@ describe('Native libmbus node-module TCP test ...', function() {
                         counterFD++;
                     }
                 } else if (hexData.substring(0, 6) === '105b01' || hexData.substring(0, 6) === '107b01') {
-                    console.log(new Date().toString() + ':     mbus-TCP-Device: Request for Class 2 Data ID 1');
+                    console.log(new Date().toString() + ':     mbus-TCPv6-Device: Request for Class 2 Data ID 1');
                     sendBuf = Buffer.from('683C3C680808727803491177040E16290000000C7878034911041331D40000426C0000441300000000046D1D0D98110227000009FD0E0209FD0F060F00008F13E816', 'hex');
                     sendMessage(socket, sendBuf);
                 } else if (hexData.substring(0, 6) === '105b02' || hexData.substring(0, 6) === '107b02') {
-                    console.log(new Date().toString() + ':     mbus-TCP-Device: Request for Class 2 Data ID 2');
+                    console.log(new Date().toString() + ':     mbus-TCPv6-Device: Request for Class 2 Data ID 2');
                     sendBuf = Buffer.from('689292680801723E020005434C1202130000008C1004521200008C1104521200008C2004334477018C21043344770102FDC9FF01ED0002FDDBFF01200002ACFF014F008240ACFF01EEFF02FDC9FF02E70002FDDBFF02230002ACFF0251008240ACFF02F1FF02FDC9FF03E40002FDDBFF03450002ACFF03A0008240ACFF03E0FF02FF68000002ACFF0040018240ACFF00BFFF01FF1304D916', 'hex');
                     sendMessage(socket, sendBuf);
                 } else if (hexData.substring(0, 23) === '680b0b6873fd52ffffff1ff') {
-                    console.log(new Date().toString() + ':     mbus-TCP-Device: Secondary Scan found');
+                    console.log(new Date().toString() + ':     mbus-TCPv6-Device: Secondary Scan found');
                     sendBuf = Buffer.from('E5', 'hex');
                     sendMessage(socket, sendBuf);
                 } else if (hexData.substring(0, 6) === '105bfd' || hexData.substring(0, 6) === '107bfd') {
-                    console.log(new Date().toString() + ':     mbus-TCP-Device: Request for Class 2 Data ID FD');
+                    console.log(new Date().toString() + ':     mbus-TCPv6-Device: Request for Class 2 Data ID FD');
                     sendBuf = Buffer.from('6815156808017220438317b40901072b0000000c13180000009f16', 'hex');
                     sendMessage(socket, sendBuf);
                 } else if (hexData.substring(0, 20) === '68060668530151017a03') {
-                    console.log(new Date().toString() + ':     mbus-TCP-Device: Request for ID Change 1 -> 3');
+                    console.log(new Date().toString() + ':     mbus-TCPv6-Device: Request for ID Change 1 -> 3');
                     sendBuf = Buffer.from('E5', 'hex');
                     sendMessage(socket, sendBuf);
                 }
                 lastMessage = hexData;
             });
             socket.on('error', function (err) {
-                console.error(new Date().toString() + ': mbus-TCP-Device: Error: ' + err);
+                console.error(new Date().toString() + ': mbus-TCPv6-Device: Error: ' + err);
             });
             socket.on('close', function () {
-                console.error(new Date().toString() + ': mbus-TCP-Device: Close');
+                console.error(new Date().toString() + ': mbus-TCPv6-Device: Close');
             });
             socket.on('end', function () {
-                console.error(new Date().toString() + ': mbus-TCP-Device: End');
+                console.error(new Date().toString() + ': mbus-TCPv6-Device: End');
             });
         });
 
         server.on('listening', function() {
-            console.log('mbus-TCP-Device: Listening');
+            console.log('mbus-TCPv6-Device: Listening');
 
             const mbusOptions = {
                 host: '::',
