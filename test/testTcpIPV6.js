@@ -96,9 +96,14 @@ describe('Native libmbus node-module TCP-IPv6 test ...', function() {
                 timeout: 100
             };
             const mbusMaster = new MbusMaster(mbusOptions);
-            const connectResult = mbusMaster.connect();
-            console.log(new Date().toString() + ': mbus-TCP-Master Open:' + connectResult);
-            if (!connectResult) server.close();
+            try {
+                const connectResult = mbusMaster.connect();
+                console.log(new Date().toString() + ': mbus-TCP-Master Open:' + connectResult);
+                if (!connectResult) server.close();
+            } catch (err) {
+                console.error(new Date().toString() + ': mbus-TCP-Master Error: ' + err);
+                server.close();
+            }
             const emergencyTimeout = setTimeout(function () {
                 testSocket.destroy();
                 server.close();

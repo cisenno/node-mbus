@@ -112,7 +112,7 @@ jobs:
           npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
 
       - name: get IPv6 address
-        if: matrix.os == 'windows-latest'
+        if: startsWith(runner.OS, 'Windows')
         shell: powershell
         run: |
           Get-NetIPAddress -AddressFamily IPV6     
