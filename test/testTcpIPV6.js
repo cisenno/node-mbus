@@ -91,7 +91,7 @@ describe('Native libmbus node-module TCP-IPv6 test ...', function() {
             console.log('mbus-TCPv6-Device: Listening');
 
             const mbusOptions = {
-                host: '::',
+                host: '::1',
                 port: port,
                 timeout: 100
             };
@@ -165,6 +165,6 @@ describe('Native libmbus node-module TCP-IPv6 test ...', function() {
             }, 2000);
         });
 
-        server.listen(port, '::');
+        server.listen(port, '::1');
     });
 });
