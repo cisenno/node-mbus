@@ -183,7 +183,7 @@ When you try to read data while communication is in progress your callback is ca
 * Also build the libmbus binaries and tools? (if needed)
 
 ## Changelog
-### 2.2.0 (2024-03-28)
+### __WORK IN PROGRESS__
 * (petrkr) Add IPv6 support to TCP connection
 * Updated dependencies
 
