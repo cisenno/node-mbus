@@ -144,7 +144,7 @@ describe('Native libmbus node-module TCP test ...', function() {
                                     server.close(function() {
                                         testSocket.destroy();
                                         clearTimeout(emergencyTimeout);
-                                        done();
+                                        setTimeout(done, 1000);
                                     });
                                 }, 1000);
                             });

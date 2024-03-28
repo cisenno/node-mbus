@@ -6,7 +6,7 @@ const expect = require('chai').expect;
 const net = require('net');
 const MbusMaster = require('../index.js');
 
-const port = 15000;
+const port = 15001;
 let lastMessage = null;
 
 function sendMessage(socket, message, callback) {
@@ -144,7 +144,7 @@ describe('Native libmbus node-module TCP-IPv6 test ...', function() {
                                     server.close(function() {
                                         testSocket.destroy();
                                         clearTimeout(emergencyTimeout);
-                                        done();
+                                        setTimeout(done, 1000);
                                     });
                                 }, 1000);
                             });
