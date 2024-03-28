@@ -115,7 +115,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: powershell
         run: |
-          Get-NetIPAddress <code class="language-powershell" lang="powershell">-AddressFamily IPV6     
+          Get-NetIPAddress -AddressFamily IPV6     
 
       - name: Install Dependencies
         run: npm ci
