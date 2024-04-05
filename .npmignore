@@ -6,4 +6,5 @@ appveyor.yml
 package-lock.js
 .github
 build
-
+.releaseconfig.json
+libmbus/.*

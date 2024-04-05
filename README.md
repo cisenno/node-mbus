@@ -183,8 +183,12 @@ When you try to read data while communication is in progress your callback is ca
 * Also build the libmbus binaries and tools? (if needed)
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* (hvacrcontrol) Fixed baudrate 1200 for windows
+
 ### 2.2.1 (2024-03-28)
-* (petrkr) Add IPv6 support to TCP connection
+* (petrkr) Added IPv6 support to TCP connection
 * Updated dependencies
 
 ### 2.1.0 (2023-08-11)
