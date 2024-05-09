@@ -255,7 +255,6 @@ public:
         char error[100];
         int address;
         int secondary_selected = 0;
-        int request_frame_res;
 
         memset((void *)&reply, 0, sizeof(mbus_frame));
 
@@ -376,7 +375,7 @@ public:
             Nan::New<String>(data).ToLocalChecked()
         };
         free(data);
-        callback->Call(2, argv);
+        callback->Call(2, argv, async_resource);
     };
 
     void HandleErrorCallback () {
@@ -388,7 +387,7 @@ public:
             Nan::Error(ErrorMessage())
         };
 
-        callback->Call(1, argv);
+        callback->Call(1, argv, async_resource);
     }
 private:
     char *data;
@@ -586,7 +585,7 @@ public:
             Nan::New<String>(data).ToLocalChecked()
         };
         free(data);
-        callback->Call(2, argv);
+        callback->Call(2, argv, async_resource);
     };
 
     void HandleErrorCallback () {
@@ -597,7 +596,7 @@ public:
         Local<Value> argv[] = {
             Nan::Error(ErrorMessage())
         };
-        callback->Call(1, argv);
+        callback->Call(1, argv, async_resource);
     }
 private:
     char *data;
@@ -769,7 +768,7 @@ public:
         Local<Value> argv[] = {
             Nan::Null()
         };
-        callback->Call(1, argv);
+        callback->Call(1, argv, async_resource);
     };
 
     void HandleErrorCallback () {
@@ -781,7 +780,7 @@ public:
             Nan::Error(ErrorMessage())
         };
 
-        callback->Call(1, argv);
+        callback->Call(1, argv, async_resource);
     }
 private:
     char *old_addr_str;
