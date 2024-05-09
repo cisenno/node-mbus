@@ -20,8 +20,11 @@
                         'OTHER_CFLAGS': [
                             '-w'
                         ],
-                    },
-                    'defines': [
+                    }
+
+                }],
+                ['OS=="win"', {
+			        'defines': [
                         # Stop <windows.h> from defining macros that conflict with
                         # std::min() and std::max().  We don't use <windows.h> (much)
                         # but we still inherit it from uv.h.
