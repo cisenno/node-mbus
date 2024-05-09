@@ -183,8 +183,7 @@ When you try to read data while communication is in progress your callback is ca
 * Also build the libmbus binaries and tools? (if needed)
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 2.2.3 (2024-05-09)
 * (Apollon77) Allow build with Nodejs 22
 
 ### 2.2.2 (2024-04-05)
