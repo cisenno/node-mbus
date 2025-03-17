@@ -8,14 +8,15 @@
 #include <unistd.h>
 #endif
 
-#define MBUS_ERROR(...) fprintf (stderr, __VA_ARGS__)
+#define MBUS_ERROR(...) fprintf(stderr, __VA_ARGS__)
 #define MAXFRAMES 16
 
 using namespace v8;
 
 Nan::Persistent<v8::Function> MbusMaster::constructor;
 
-MbusMaster::MbusMaster() {
+MbusMaster::MbusMaster()
+{
     connected = false;
     serial = true;
     communicationInProgress = false;
@@ -23,18 +24,22 @@ MbusMaster::MbusMaster() {
     uv_rwlock_init(&queueLock);
 }
 
-MbusMaster::~MbusMaster(){
-    if(connected && handle) {
+MbusMaster::~MbusMaster()
+{
+    if (connected && handle)
+    {
         mbus_disconnect(handle);
     }
-    if(handle) {
+    if (handle)
+    {
         mbus_context_free(handle);
         handle = NULL;
     }
     uv_rwlock_destroy(&queueLock);
 }
 
-NAN_MODULE_INIT(MbusMaster::Init) {
+NAN_MODULE_INIT(MbusMaster::Init)
+{
     Nan::HandleScope scope;
 
     // Prepare constructor template
@@ -64,37 +69,41 @@ NAN_MODULE_INIT(MbusMaster::Init) {
     target->Set(context, Nan::New("MbusMaster").ToLocalChecked(), function);
 }
 
-NAN_METHOD(MbusMaster::New) {
+NAN_METHOD(MbusMaster::New)
+{
     Nan::HandleScope scope;
 
     // throw an error if constructor is called without new keyword
-    if(!info.IsConstructCall()) {
+    if (!info.IsConstructCall())
+    {
         return Nan::ThrowError(Nan::New("MbusMaster::New - called without new keyword").ToLocalChecked());
     }
 
     // Invoked as constructor: `new MbusMaster(...)`
-    MbusMaster* obj = new MbusMaster();
+    MbusMaster *obj = new MbusMaster();
     obj->Wrap(info.Holder());
     info.GetReturnValue().Set(info.Holder());
 }
 
-NAN_METHOD(MbusMaster::OpenTCP) {
+NAN_METHOD(MbusMaster::OpenTCP)
+{
     Nan::HandleScope scope;
 
-    MbusMaster* obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
+    MbusMaster *obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
 
     int port = (long)Nan::To<int64_t>(info[1]).FromJust();
     char *host = get(Nan::To<v8::String>(info[0]).ToLocalChecked(), "127.0.0.1");
     double timeout = (double)Nan::To<double>(info[2]).FromJust();
 
-    if(!obj->connected) {
+    if (!obj->connected)
+    {
         obj->serial = false;
         if ((port < 0) || (port > 0xFFFF))
         {
             free(host);
             info.GetReturnValue().Set(Nan::False());
         }
-        if (!(obj->handle = mbus_context_tcp(host,port)))
+        if (!(obj->handle = mbus_context_tcp(host, port)))
         {
             free(host);
             info.GetReturnValue().Set(Nan::False());
@@ -102,7 +111,8 @@ NAN_METHOD(MbusMaster::OpenTCP) {
         }
         free(host);
 
-        if (timeout > 0.0) {
+        if (timeout > 0.0)
+        {
             mbus_tcp_set_timeout_set(timeout);
         }
 
@@ -121,16 +131,18 @@ NAN_METHOD(MbusMaster::OpenTCP) {
     info.GetReturnValue().Set(Nan::False());
 }
 
-NAN_METHOD(MbusMaster::OpenSerial) {
+NAN_METHOD(MbusMaster::OpenSerial)
+{
     Nan::HandleScope scope;
 
-    MbusMaster* obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
+    MbusMaster *obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
 
     long boudrate;
     int _boudrate = (int)Nan::To<int64_t>(info[1]).FromJust();
     char *port = get(Nan::To<v8::String>(info[0]).ToLocalChecked(), "/dev/ttyS0");
 
-    switch(_boudrate) {
+    switch (_boudrate)
+    {
     case 300:
         boudrate = 300;
         break;
@@ -161,7 +173,8 @@ NAN_METHOD(MbusMaster::OpenSerial) {
     }
 
     obj->communicationInProgress = false;
-    if(!obj->connected) {
+    if (!obj->connected)
+    {
         obj->serial = true;
 
         if (!(obj->handle = mbus_context_serial(port)))
@@ -197,17 +210,20 @@ NAN_METHOD(MbusMaster::OpenSerial) {
     info.GetReturnValue().Set(Nan::False());
 }
 
-NAN_METHOD(MbusMaster::Close) {
+NAN_METHOD(MbusMaster::Close)
+{
     Nan::HandleScope scope;
 
-    MbusMaster* obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
+    MbusMaster *obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
 
-    if(obj->communicationInProgress) {
+    if (obj->communicationInProgress)
+    {
         info.GetReturnValue().Set(Nan::False());
         return;
     }
 
-    if(obj->connected) {
+    if (obj->connected)
+    {
         mbus_disconnect(obj->handle);
         mbus_context_free(obj->handle);
         obj->handle = NULL;
@@ -215,7 +231,8 @@ NAN_METHOD(MbusMaster::Close) {
         obj->communicationInProgress = false;
         info.GetReturnValue().Set(Nan::True());
     }
-    else {
+    else
+    {
         info.GetReturnValue().Set(Nan::False());
     }
 }
@@ -236,11 +253,13 @@ static int init_slaves(mbus_handle *handle)
     return 1;
 }
 
-class RecieveWorker : public Nan::AsyncWorker {
+class RecieveWorker : public Nan::AsyncWorker
+{
 public:
-    RecieveWorker(Nan::Callback *callback, char *addr_str, bool ping_first, uv_rwlock_t *lock, mbus_handle *handle, bool *communicationInProgress)
-    : Nan::AsyncWorker(callback), addr_str(addr_str), ping_first(ping_first), lock(lock), handle(handle), communicationInProgress(communicationInProgress) {}
-    ~RecieveWorker() {
+    RecieveWorker(Nan::Callback *callback, char *addr_str, bool ping_first, uv_rwlock_t *lock, mbus_handle *handle, bool *communicationInProgress, int max_frames)
+        : Nan::AsyncWorker(callback), addr_str(addr_str), ping_first(ping_first), lock(lock), handle(handle), communicationInProgress(communicationInProgress), max_frames(max_frames) {}
+    ~RecieveWorker()
+    {
         free(addr_str);
     }
 
@@ -248,7 +267,8 @@ public:
     // It is not safe to access V8, or V8 data structures
     // here, so everything we need for input and output
     // should go on `this`.
-    void Execute () {
+    void Execute()
+    {
         uv_rwlock_wrlock(lock);
 
         mbus_frame reply;
@@ -319,7 +339,7 @@ public:
                     SetErrorMessage(error);
 
                     // manual free
-                    mbus_frame_free((mbus_frame*)reply.next);
+                    mbus_frame_free((mbus_frame *)reply.next);
 
                     uv_rwlock_wrunlock(lock);
                     return;
@@ -329,13 +349,13 @@ public:
 
         // instead of the send and recv, use this sendrecv function that
         // takes care of the possibility of multi-telegram replies (limit = 16 frames)
-        if (mbus_sendrecv_request(handle, address, &reply, MAXFRAMES) != 0)
+        if (mbus_sendrecv_request(handle, address, &reply, max_frames) != 0)
         {
             sprintf(error, "Failed to send/receive M-Bus request frame[%s].", addr_str);
             SetErrorMessage(error);
 
             // manual free
-            mbus_frame_free((mbus_frame*)reply.next);
+            mbus_frame_free((mbus_frame *)reply.next);
 
             uv_rwlock_wrunlock(lock);
             return;
@@ -350,14 +370,14 @@ public:
             SetErrorMessage(error);
 
             // manual free
-            mbus_frame_free((mbus_frame*)reply.next);
+            mbus_frame_free((mbus_frame *)reply.next);
 
             uv_rwlock_wrunlock(lock);
             return;
         }
 
         // manual free
-        mbus_frame_free((mbus_frame*)reply.next);
+        mbus_frame_free((mbus_frame *)reply.next);
 
         uv_rwlock_wrunlock(lock);
     }
@@ -365,73 +385,85 @@ public:
     // Executed when the async work is complete
     // this function will be run inside the main event loop
     // so it is safe to use V8 again
-    void HandleOKCallback () {
+    void HandleOKCallback()
+    {
         Nan::HandleScope scope;
 
         *communicationInProgress = false;
 
         Local<Value> argv[] = {
             Nan::Null(),
-            Nan::New<String>(data).ToLocalChecked()
-        };
+            Nan::New<String>(data).ToLocalChecked()};
         free(data);
         callback->Call(2, argv, async_resource);
     };
 
-    void HandleErrorCallback () {
+    void HandleErrorCallback()
+    {
         Nan::HandleScope scope;
 
         *communicationInProgress = false;
 
         Local<Value> argv[] = {
-            Nan::Error(ErrorMessage())
-        };
+            Nan::Error(ErrorMessage())};
 
         callback->Call(1, argv, async_resource);
     }
+
 private:
     char *data;
     char *addr_str;
     bool ping_first;
+    int max_frames;
     uv_rwlock_t *lock;
     mbus_handle *handle;
     bool *communicationInProgress;
 };
 
-NAN_METHOD(MbusMaster::Get) {
+NAN_METHOD(MbusMaster::Get)
+{
     Nan::HandleScope scope;
 
-    MbusMaster* obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
+    MbusMaster *obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
 
-    char *address = get(Nan::To<v8::String>(info[0]).ToLocalChecked(),"0");
+    char *address = get(Nan::To<v8::String>(info[0]).ToLocalChecked(), "0");
     bool ping_first = Nan::To<bool>(info[1]).FromJust();
-    Nan::Callback *callback = new Nan::Callback(info[2].As<Function>());
+    int max_frames = (int)Nan::To<int64_t>(info[2]).FromJust();
+    Nan::Callback *callback = new Nan::Callback(info[3].As<Function>());
 
-    if(obj->connected) {
+    char num_char[10 + sizeof(char)];
+    std::sprintf(num_char, "%d", max_frames);
+    MBUS_ERROR("max frames = %s.", num_char);
+
+    if (obj->connected)
+    {
         obj->communicationInProgress = true;
 
-        Nan::AsyncQueueWorker(new RecieveWorker(callback, address, ping_first, &(obj->queueLock), obj->handle, &(obj->communicationInProgress)));
-    } else {
+        Nan::AsyncQueueWorker(new RecieveWorker(callback, address, ping_first, &(obj->queueLock), obj->handle, &(obj->communicationInProgress), max_frames));
+    }
+    else
+    {
         Local<Value> argv[] = {
-            Nan::Error("Not connected to port")
-        };
+            Nan::Error("Not connected to port")};
         callback->Call(1, argv);
     }
     info.GetReturnValue().SetUndefined();
 }
 
-class ScanSecondaryWorker : public Nan::AsyncWorker {
+class ScanSecondaryWorker : public Nan::AsyncWorker
+{
 public:
-    ScanSecondaryWorker(Nan::Callback *callback,uv_rwlock_t *lock, mbus_handle *handle, bool *communicationInProgress)
-    : Nan::AsyncWorker(callback), lock(lock), handle(handle), communicationInProgress(communicationInProgress) {}
-    ~ScanSecondaryWorker() {
+    ScanSecondaryWorker(Nan::Callback *callback, uv_rwlock_t *lock, mbus_handle *handle, bool *communicationInProgress)
+        : Nan::AsyncWorker(callback), lock(lock), handle(handle), communicationInProgress(communicationInProgress) {}
+    ~ScanSecondaryWorker()
+    {
     }
 
     //------------------------------------------------------------------------------
     // Iterate over all address masks according to the M-Bus probe algorithm.
     //------------------------------------------------------------------------------
     int
-    Scan2ndAddressRange(mbus_handle * handle, int pos, char *addr_mask)
+    Scan2ndAddressRange(mbus_handle *handle, int pos, char *addr_mask)
     {
         int i, i_start, i_end, probe_ret;
         char *mask, matching_mask[17];
@@ -464,20 +496,20 @@ public:
         {
             // mask[pos] is a wildcard -> enumerate all 0..9 at this position
             i_start = 0;
-            i_end   = 9;
+            i_end = 9;
         }
         else
         {
             if (pos < 15)
             {
                 // mask[pos] is not a wildcard -> don't iterate, recursively check pos+1
-                Scan2ndAddressRange(handle, pos+1, mask);
+                Scan2ndAddressRange(handle, pos + 1, mask);
             }
             else
             {
                 // .. except if we're at the last pos (==15) and this isn't a wildcard we still need to send the probe
                 i_start = (int)(mask[pos] - '0');
-                i_end   = (int)(mask[pos] - '0');
+                i_end = (int)(mask[pos] - '0');
             }
         }
 
@@ -486,30 +518,31 @@ public:
         {
             for (i = i_start; i <= i_end; i++)
             {
-                mask[pos] = '0'+i;
+                mask[pos] = '0' + i;
 
                 if (handle->scan_progress)
-                    handle->scan_progress(handle,mask);
+                    handle->scan_progress(handle, mask);
 
                 probe_ret = mbus_probe_secondary_address(handle, mask, matching_mask);
 
                 if (probe_ret == MBUS_PROBE_SINGLE)
                 {
-                    //printf("Found a device on secondary address %s [using address mask %s]\n", matching_mask, mask);
-                    sprintf(buffer,"\"%s\",",matching_mask);
-                    data = (char*)realloc(data, strlen(data) + strlen(buffer) + 2*sizeof(char));
-                    if (data) {
-                        strcat(data,buffer);
+                    // printf("Found a device on secondary address %s [using address mask %s]\n", matching_mask, mask);
+                    sprintf(buffer, "\"%s\",", matching_mask);
+                    data = (char *)realloc(data, strlen(data) + strlen(buffer) + 2 * sizeof(char));
+                    if (data)
+                    {
+                        strcat(data, buffer);
                     }
                 }
                 else if (probe_ret == MBUS_PROBE_COLLISION)
                 {
                     // collision, more than one device matching, restrict the search mask further
-                    Scan2ndAddressRange(handle, pos+1, mask);
+                    Scan2ndAddressRange(handle, pos + 1, mask);
                 }
                 else if (probe_ret == MBUS_PROBE_NOTHING)
                 {
-                     // nothing... move on to next address mask
+                    // nothing... move on to next address mask
                 }
                 else // MBUS_PROBE_ERROR
                 {
@@ -527,14 +560,15 @@ public:
     // It is not safe to access V8, or V8 data structures
     // here, so everything we need for input and output
     // should go on `this`.
-    void Execute () {
+    void Execute()
+    {
         uv_rwlock_wrlock(lock);
 
         mbus_frame *frame = NULL, reply;
         char error[100];
         char mask[17];
 
-        strcpy(mask,"FFFFFFFFFFFFFFFF");
+        strcpy(mask, "FFFFFFFFFFFFFFFF");
 
         memset((void *)&reply, 0, sizeof(mbus_frame));
 
@@ -561,7 +595,7 @@ public:
 
         if (ret == -1)
         {
-            sprintf(error,"Failed to probe secondary address %s", mask);
+            sprintf(error, "Failed to probe secondary address %s", mask);
             SetErrorMessage(error);
             free(data);
             uv_rwlock_wrunlock(lock);
@@ -575,29 +609,30 @@ public:
     // Executed when the async work is complete
     // this function will be run inside the main event loop
     // so it is safe to use V8 again
-    void HandleOKCallback () {
+    void HandleOKCallback()
+    {
         Nan::HandleScope scope;
 
         *communicationInProgress = false;
 
         Local<Value> argv[] = {
             Nan::Null(),
-            Nan::New<String>(data).ToLocalChecked()
-        };
+            Nan::New<String>(data).ToLocalChecked()};
         free(data);
         callback->Call(2, argv, async_resource);
     };
 
-    void HandleErrorCallback () {
+    void HandleErrorCallback()
+    {
         Nan::HandleScope scope;
 
         *communicationInProgress = false;
 
         Local<Value> argv[] = {
-            Nan::Error(ErrorMessage())
-        };
+            Nan::Error(ErrorMessage())};
         callback->Call(1, argv, async_resource);
     }
+
 private:
     char *data;
     uv_rwlock_t *lock;
@@ -605,30 +640,35 @@ private:
     bool *communicationInProgress;
 };
 
-NAN_METHOD(MbusMaster::ScanSecondary) {
+NAN_METHOD(MbusMaster::ScanSecondary)
+{
     Nan::HandleScope scope;
 
-    MbusMaster* obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
+    MbusMaster *obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
 
     Nan::Callback *callback = new Nan::Callback(info[0].As<Function>());
-    if(obj->connected) {
+    if (obj->connected)
+    {
         obj->communicationInProgress = true;
 
         Nan::AsyncQueueWorker(new ScanSecondaryWorker(callback, &(obj->queueLock), obj->handle, &(obj->communicationInProgress)));
-    } else {
+    }
+    else
+    {
         Local<Value> argv[] = {
-            Nan::Error("Not connected to port")
-        };
+            Nan::Error("Not connected to port")};
         callback->Call(1, argv);
     }
     info.GetReturnValue().SetUndefined();
 }
 
-class SetPrimaryWorker : public Nan::AsyncWorker {
+class SetPrimaryWorker : public Nan::AsyncWorker
+{
 public:
     SetPrimaryWorker(Nan::Callback *callback, char *old_addr_str, int new_address, uv_rwlock_t *lock, mbus_handle *handle, bool *communicationInProgress)
-    : Nan::AsyncWorker(callback), old_addr_str(old_addr_str), new_address(new_address), lock(lock), handle(handle), communicationInProgress(communicationInProgress) {}
-    ~SetPrimaryWorker() {
+        : Nan::AsyncWorker(callback), old_addr_str(old_addr_str), new_address(new_address), lock(lock), handle(handle), communicationInProgress(communicationInProgress) {}
+    ~SetPrimaryWorker()
+    {
         free(old_addr_str);
     }
 
@@ -636,7 +676,8 @@ public:
     // It is not safe to access V8, or V8 data structures
     // here, so everything we need for input and output
     // should go on `this`.
-    void Execute () {
+    void Execute()
+    {
         uv_rwlock_wrlock(lock);
 
         mbus_frame reply;
@@ -654,13 +695,13 @@ public:
 
         switch (new_address)
         {
-            case MBUS_ADDRESS_NETWORK_LAYER:
-            case MBUS_ADDRESS_BROADCAST_REPLY:
-            case MBUS_ADDRESS_BROADCAST_NOREPLY:
-                sprintf(error, "Invalid new primary address");
-                SetErrorMessage(error);
-                uv_rwlock_wrunlock(lock);
-                return;
+        case MBUS_ADDRESS_NETWORK_LAYER:
+        case MBUS_ADDRESS_BROADCAST_REPLY:
+        case MBUS_ADDRESS_BROADCAST_NOREPLY:
+            sprintf(error, "Invalid new primary address");
+            SetErrorMessage(error);
+            uv_rwlock_wrunlock(lock);
+            return;
         }
 
         if (init_slaves(handle) == 0)
@@ -744,15 +785,15 @@ public:
         else if (mbus_frame_type(&reply) != MBUS_FRAME_TYPE_ACK)
         {
             sprintf(error, "Unknown reply from Device (%d)", mbus_frame_type(&reply));
-            //mbus_frame_print(&reply);
+            // mbus_frame_print(&reply);
             SetErrorMessage(error);
             uv_rwlock_wrunlock(lock);
             return;
         }
         else
         {
-            //printf("Set primary address of device to %d", new_address);
-            // Success
+            // printf("Set primary address of device to %d", new_address);
+            //  Success
         }
         uv_rwlock_wrunlock(lock);
     }
@@ -760,28 +801,29 @@ public:
     // Executed when the async work is complete
     // this function will be run inside the main event loop
     // so it is safe to use V8 again
-    void HandleOKCallback () {
+    void HandleOKCallback()
+    {
         Nan::HandleScope scope;
 
         *communicationInProgress = false;
 
         Local<Value> argv[] = {
-            Nan::Null()
-        };
+            Nan::Null()};
         callback->Call(1, argv, async_resource);
     };
 
-    void HandleErrorCallback () {
+    void HandleErrorCallback()
+    {
         Nan::HandleScope scope;
 
         *communicationInProgress = false;
 
         Local<Value> argv[] = {
-            Nan::Error(ErrorMessage())
-        };
+            Nan::Error(ErrorMessage())};
 
         callback->Call(1, argv, async_resource);
     }
+
 private:
     char *old_addr_str;
     int new_address;
@@ -790,41 +832,49 @@ private:
     bool *communicationInProgress;
 };
 
-NAN_METHOD(MbusMaster::SetPrimaryId) {
+NAN_METHOD(MbusMaster::SetPrimaryId)
+{
     Nan::HandleScope scope;
 
-    MbusMaster* obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
+    MbusMaster *obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
 
-    char *oldAddress = get(Nan::To<v8::String>(info[0]).ToLocalChecked(),"0");
+    char *oldAddress = get(Nan::To<v8::String>(info[0]).ToLocalChecked(), "0");
     int newAddress = (int)Nan::To<int64_t>(info[1]).FromJust();
     Nan::Callback *callback = new Nan::Callback(info[2].As<Function>());
-    if(obj->connected) {
+    if (obj->connected)
+    {
         obj->communicationInProgress = true;
 
         Nan::AsyncQueueWorker(new SetPrimaryWorker(callback, oldAddress, newAddress, &(obj->queueLock), obj->handle, &(obj->communicationInProgress)));
-    } else {
+    }
+    else
+    {
         Local<Value> argv[] = {
-            Nan::Error("Not connected to port")
-        };
+            Nan::Error("Not connected to port")};
         callback->Call(1, argv);
     }
     info.GetReturnValue().SetUndefined();
 }
 
-
-NAN_GETTER(MbusMaster::HandleGetters) {
-    MbusMaster* obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
+NAN_GETTER(MbusMaster::HandleGetters)
+{
+    MbusMaster *obj = node::ObjectWrap::Unwrap<MbusMaster>(info.This());
 
     std::string propertyName = std::string(*Nan::Utf8String(property));
-    if (propertyName == "connected") {
+    if (propertyName == "connected")
+    {
         info.GetReturnValue().Set(obj->connected);
     }
-    else if (propertyName == "communicationInProgress") {
+    else if (propertyName == "communicationInProgress")
+    {
         info.GetReturnValue().Set(obj->communicationInProgress);
-    } else {
+    }
+    else
+    {
         info.GetReturnValue().Set(Nan::Undefined());
     }
 }
 
-NAN_SETTER(MbusMaster::HandleSetters) {
+NAN_SETTER(MbusMaster::HandleSetters)
+{
 }
