@@ -1,6 +1,9 @@
 {
-  "name": "node-mbus",
+  "name": "@e-nno/node-mbus",
   "version": "2.2.4",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "libmbus binding",
   "keywords": [
     "mbus"
